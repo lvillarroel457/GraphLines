@@ -305,13 +305,18 @@ def calculate_lines(lines_click, lines_data, lines_state):
             message1 = 'El grafo es vacío.'
             message2= ''
 
+            new_lines_data = []
+
             new_line_state=False
+            
             
 
         elif not nx.is_strongly_connected(G):
             
             message1 = 'Grafo no fuertemente conexo.'
             message2= ''
+
+            new_lines_data = []
 
             new_line_state=False
 
