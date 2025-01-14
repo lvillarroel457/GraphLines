@@ -1,15 +1,15 @@
 
-#Entorno Virtual
+# Entorno Virtual
 
 py -m venv myenv
 myenv\Scripts\activate
 pip install -r requirements.txt
 
 
-#Grafo
+# Grafo
 
 py -m graph
 
-#Digrafo
+# Digrafo
 
 py -m digraph
