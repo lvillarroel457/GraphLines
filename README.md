@@ -4,6 +4,9 @@
 ```commandline
 py -m venv myenv
 
+```
+
+```commandline
 myenv\Scripts\activate
 
 ```
