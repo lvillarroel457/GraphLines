@@ -90,6 +90,10 @@ app.layout = html.Div([
     Output('graph', 'stylesheet', allow_duplicate=True),
     Output('graph', 'layout'),
     Output("pos-checklist", "value"),
+    Output('add-vertices-input', 'value'),
+     Output('add-edges-input', 'value'),
+     Output('remove-vertices-input', 'value'),
+     Output('remove-edges-input', 'value'),
     Input('add-vertices-btn', 'n_clicks'),
      Input('add-edges-btn', 'n_clicks'),
      Input('remove-vertices-btn', 'n_clicks'),
@@ -114,6 +118,13 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
 
     global G
 
+    new_pos = position
+    
+    new_add_vertices_input = add_vertices_input
+    new_add_edges_input = add_edges_input
+    new_remove_vertices_input = remove_vertices_input
+    new_remove_edges_input = remove_edges_input
+
     if weights: #Si está seleccionado Pesos en el checklist
         
         edge_style = [{'selector': 'edge', 'style': {'label': 'data(weight)', 'text-background-color': 'white',
@@ -124,15 +135,9 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         edge_style = [{'selector': 'edge', 'style': {'curve-style': 'bezier','target-arrow-shape': 'triangle'}}]
 
 
-    new_pos = position
-    
-    if position:
 
-        layout={'name': 'preset', 'fit': False}
+    layout={'name': 'preset', 'fit': False}
 
-    else:
-        
-        layout={'name': 'cose'}
 
     triggered_id = ctx.triggered_id
     
@@ -160,6 +165,12 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
 
             new_lines_state = False
 
+            new_add_vertices_input = ''
+
+            if not position:
+                
+                layout={'name': 'cose'}
+
         except:
 
             message2 = 'Error en el input. Intente denuevo.'
@@ -180,6 +191,13 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
             message1 =  'Líneas no actualizadas.'
 
             new_lines_state = False
+
+            new_add_edges_input = ''
+
+            
+            if not position:
+                
+                layout={'name': 'cose'}
 
         except:
 
@@ -202,6 +220,13 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
 
             new_lines_state = False
 
+            new_remove_vertices_input = ''
+
+
+            if not position:
+                
+                layout={'name': 'cose'}
+
 
         except:
             
@@ -222,6 +247,13 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
             new_lines_state = False
 
 
+            new_remove_edges_input = ''
+
+
+            if not position:
+                
+                layout={'name': 'cose'}
+
         except:
 
             message2 = 'Error en el input. Intente denuevo.'
@@ -237,13 +269,19 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         new_lines_state = False
 
         new_pos = []
-    
+
+
+        new_add_vertices_input = ''
+        new_add_edges_input = ''
+        new_remove_vertices_input = ''
+        new_remove_edges_input = ''
+        
     elements = nx_to_cytoscape_elements(G)
 
 
     
 
-    return elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos
+    return elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input
 
 
 
