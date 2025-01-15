@@ -89,6 +89,7 @@ app.layout = html.Div([
     Output('lines-info', 'children', allow_duplicate=True),
     Output('graph', 'stylesheet', allow_duplicate=True),
     Output('graph', 'layout'),
+    Output("pos-checklist", "value"),
     Input('add-vertices-btn', 'n_clicks'),
      Input('add-edges-btn', 'n_clicks'),
      Input('remove-vertices-btn', 'n_clicks'),
@@ -105,7 +106,6 @@ app.layout = html.Div([
     State("weight-checklist", "value"),
     State("pos-checklist", "value"),
     State('lines-state', 'data'),
-    
     prevent_initial_call=True
 )
 def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks, 
@@ -124,6 +124,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         edge_style = [{'selector': 'edge', 'style': {'curve-style': 'bezier','target-arrow-shape': 'triangle'}}]
 
 
+    new_pos = position
+    
     if position:
 
         layout={'name': 'preset', 'fit': False}
@@ -233,13 +235,15 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         message1 = ''
 
         new_lines_state = False
+
+        new_pos = []
     
     elements = nx_to_cytoscape_elements(G)
 
 
     
 
-    return elements, message1, new_lines_state,  message2, stylesheet, layout
+    return elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos
 
 
 
