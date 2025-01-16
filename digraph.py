@@ -349,7 +349,7 @@ def calculate_lines(lines_click, lines_data, lines_state):
 
             new_lines_data = []
 
-            new_line_state=False
+            new_lines_state=False
             
             
 
@@ -360,7 +360,7 @@ def calculate_lines(lines_click, lines_data, lines_state):
 
             new_lines_data = []
 
-            new_line_state=False
+            new_lines_state=False
 
             
         
@@ -383,7 +383,7 @@ def calculate_lines(lines_click, lines_data, lines_state):
             message1 =  'Líneas actualizadas.' 
             message2= 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr + '. Diámetro: ' + str(d) +  '.\n' + 'No hay nodos seleccionados.'
 
-            new_line_state=True
+            new_lines_state=True
             
         else: #line_state=True
 
@@ -406,11 +406,11 @@ def calculate_lines(lines_click, lines_data, lines_state):
             
             message2= 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr + '. Diámetro: ' + str(d) + '.\n' + 'No hay nodos seleccionados.'
 
-            new_line_state = lines_state
+            new_lines_state = lines_state
     
         
 
-    return new_lines_data, message1, new_line_state, message2
+    return new_lines_data, message1, new_lines_state, message2
         
 
 
