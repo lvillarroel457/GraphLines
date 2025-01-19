@@ -520,8 +520,13 @@ def donwnload(n_clicks, lines_data, lines_state):
     
     nodes = str(G.nodes())
     edges = str(G.edges(data=True))
+
     A = nx.to_numpy_array(G, dtype=int)
     strA = np.array2string(A, separator=', ')
+
+    D = FW(G)
+    strD = np.array2string(D, separator=', ')
+
 
     if lines_state:
         pairdict =  lines_data[0]
@@ -531,7 +536,7 @@ def donwnload(n_clicks, lines_data, lines_state):
         pairdict =  ''
         linedict = ''
 
-    content = 'Nodos: '+ nodes + '\n \n' + 'Aristas: ' + edges + '\n \n \n' + 'Matriz de adyacencia: \n' + strA +'\n \n \n' + 'Diccionario par-línea:  ' + str(pairdict) + '\n \n' +  'Diccionario línea-pares:  ' + str(linedict)
+    content = 'Nodos: '+ nodes + '\n \n' + 'Aristas: ' + edges + '\n \n \n' + 'Matriz de adyacencia: \n' + strA + '\n \n ' + 'Matriz de distancias: \n' + strD +  '\n \n \n' + 'Diccionario par-línea:  ' + str(pairdict) + '\n \n' +  'Diccionario línea-pares:  ' + str(linedict)
     
     
     return dict(content=content, filename="graphlines.txt")
