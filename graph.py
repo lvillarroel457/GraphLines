@@ -358,7 +358,9 @@ def calculate_lines(lines_click, lines_data, lines_state):
             LM = lines(B, n)
             pairdict, linedict, l = matrixtolinesdict(LM, n, True)
             d = nx.diameter(G, weight='weight')
-            new_lines_data = [pairdict, linedict, l, d]
+            strD = np.array2string(D, separator=', ')
+            strB = str(B)
+            new_lines_data = [pairdict, linedict, l, d, strD, strB]
 
             
             if l == n:
@@ -505,17 +507,20 @@ def donwnload(n_clicks, lines_data, lines_state):
     A = nx.to_numpy_array(G, dtype=int)
     strA = np.array2string(A, separator=', ')
 
-    D = FW(G)
-    strD = np.array2string(D, separator=', ')
-
     if lines_state:
         pairdict =  lines_data[0]
         linedict = lines_data[1]
+        strD = lines_data[4]
+        strB = lines_data[5]
+        
+
     else:
         pairdict =  ''
         linedict = ''
+        strD = ''
+        strB = ''
 
-    content = 'Nodos: '+ nodes + '\n \n' + 'Aristas: ' + edges + '\n \n \n' + 'Matriz de adyacencia: \n' + strA + '\n \n ' + 'Matriz de distancias: \n' + strD + '\n \n \n' + 'Diccionario par-línea:  ' + str(pairdict) + '\n \n' +  'Diccionario línea-pares:  ' + str(linedict) +'\n\n\n'
+    content = 'Nodos: '+ nodes + '\n \n' + 'Aristas: ' + edges + '\n \n \n' + 'Matriz de adyacencia: \n' + strA + '\n \n ' + 'Matriz de distancias: \n' + strD + '\n \n \n' + 'Betweenness: '+ strB + '\n \n \n' + 'Diccionario par-línea:  ' + str(pairdict) + '\n \n' +  'Diccionario línea-pares:  ' + str(linedict) +'\n\n\n'
     
     
     return dict(content=content, filename="graphlines.txt")
