@@ -1,3 +1,5 @@
+import networkx as nx
+
 def nx_to_dict(G):
 
     '''
