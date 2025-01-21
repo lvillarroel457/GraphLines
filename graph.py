@@ -168,7 +168,7 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         except:
             
             
-            message2 = 'Error en el input. Intente denuevo.'
+            message2 = 'Error en el input. Intente de nuevo.'
             
         
    
@@ -196,7 +196,7 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         except:
 
 
-            message2 = 'Error en el input. Intente denuevo.'
+            message2 = 'Error en el input. Intente de nuevo.'
             
         
 
@@ -223,7 +223,7 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
             
         except:
 
-            message2 = 'Error en el input. Intente denuevo.'
+            message2 = 'Error en el input. Intente de nuevo.'
 
         
         
@@ -246,7 +246,7 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
             
         except:
 
-            message2 = 'Error en el input. Intente denuevo.'
+            message2 = 'Error en el input. Intente de nuevo.'
 
 
     elif triggered_id == 'clear-graph-btn':
