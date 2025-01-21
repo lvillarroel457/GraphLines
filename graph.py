@@ -4,18 +4,16 @@ import networkx as nx
 import numpy as np
 
 from line_functions import FW, Betweenness, lines, matrixtolinesdict
-from process_functions import weighted_edges_input, remove_edges_process, remove_vertices_process, nx_to_cytoscape_elements
+from process_functions import nx_to_dict, g_dict_to_nx, weighted_edges_input, remove_edges_process, remove_vertices_process, nx_to_cytoscape_elements
+
 
 app = Dash(__name__)
 
-G = nx.Graph() # Se crea el grafo.
-selected_nodes = [] #Lista para guardar los nodos seleccionados de forma interactiva
-
 stylesheet = [{'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center','text-halign': 'center'}}] #Hace que se vea el 'label' de cada nodo en su centro.
 
-
-
 app.layout = html.Div([
+    html.Div(dcc.Store(id='graph-dict', data=[{'nodes': 0, 'edges': []}])), #Para guardar el grafo.
+    html.Div(dcc.Store(id='selected-nodes', data=[])), #Lista para guardar los nodos seleccionados de forma interactiva
     html.Div(dcc.Store(id='lines', data=[])), #Para guardar y actualizar las líneas.
     html.Div(dcc.Store(id='lines-state', data=False)), #Si data=True, las líneas están actualizadas, si data=False, no.
     html.Div(id='lines-info',children='', #Texto con información de las líneas.
@@ -78,6 +76,7 @@ app.layout = html.Div([
 
 # Callback 1: Edición del grafo
 @app.callback(
+    Output('graph-dict', 'data'),
     Output('graph', 'elements'),
     Output('lines-state-info', 'children', allow_duplicate=True),
     Output('lines-state', 'data', allow_duplicate=True),
@@ -105,13 +104,15 @@ app.layout = html.Div([
     State("weight-checklist", "value"),
     State("pos-checklist", "value"),
     State('lines-state', 'data'),
+    State('graph-dict', 'data'),
     prevent_initial_call=True
 )
 def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks,
                  add_v_submit, add_e_submit, remove_v_submit, remove_e_submit,
-                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state):
+                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state, graph_dict):
 
-    global G
+    g_dict = graph_dict[0]
+    G = g_dict_to_nx(g_dict)
 
     new_pos = position
 
@@ -249,7 +250,9 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
 
 
     elif triggered_id == 'clear-graph-btn':
+        
         G.clear()
+        
         message1 = ''
 
         new_lines_state = False
@@ -265,8 +268,12 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
 
     elements = nx_to_cytoscape_elements(G)
 
+    
+    new_dict = nx_to_dict(G)
+    new_graph_dict = [new_dict]
 
-    return elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input
+
+    return new_graph_dict, elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input
 
 
 
@@ -308,12 +315,19 @@ def weight_checklists(weights):
     Output('lines-state-info', 'children', allow_duplicate=True),
     Output('lines-state', 'data', allow_duplicate=True),
     Output('lines-info', 'children', allow_duplicate=True),
+    Output('selected-nodes', 'data', allow_duplicate=True),
     Input('lines-btn', 'n_clicks'),
     State('lines', 'data'),
     State('lines-state', 'data'),
+    State('graph-dict', 'data'),
     prevent_initial_call=True
 )
-def calculate_lines(lines_click, lines_data, lines_state):
+def calculate_lines(lines_click, lines_data, lines_state, graph_dict):
+
+
+    g_dict = graph_dict[0]
+    G = g_dict_to_nx(g_dict)
+        
 
     triggered_id = ctx.triggered_id
 
@@ -321,11 +335,9 @@ def calculate_lines(lines_click, lines_data, lines_state):
     message2= ''
 
     
-    global selected_nodes
-    
     if triggered_id == 'lines-btn':
 
-        selected_nodes=[]
+        new_selected_nodes=[]
         
         if len(G.nodes()) == 0:
             
@@ -360,7 +372,7 @@ def calculate_lines(lines_click, lines_data, lines_state):
             d = nx.diameter(G, weight='weight')
             strD = np.array2string(D, separator=', ')
             strB = str(B)
-            new_lines_data = [pairdict, linedict, l, d, strD, strB]
+            new_lines_data = [pairdict, linedict, l, d, n, strD, strB]
 
             
             if l == n:
@@ -383,7 +395,7 @@ def calculate_lines(lines_click, lines_data, lines_state):
             linedict = lines_data[1]
             l = lines_data[2]
             d = lines_data[3]
-            n = len(G.nodes())
+            n = lines_data[4]
 
             if l == n:
                 lstr = 'Sí' #Hay línea universal
@@ -398,7 +410,7 @@ def calculate_lines(lines_click, lines_data, lines_state):
     
         
 
-    return new_lines_data, message1, new_lines_state, message2
+    return new_lines_data, message1, new_lines_state, message2, new_selected_nodes
         
 
 
@@ -407,17 +419,20 @@ def calculate_lines(lines_click, lines_data, lines_state):
 @app.callback(
      Output('graph', 'stylesheet', allow_duplicate=True),
      Output('lines-info', 'children', allow_duplicate=True),
+    Output('selected-nodes', 'data', allow_duplicate=True),
     Input('graph', 'tapNodeData'),
     State("weight-checklist", "value"),
     State('lines', 'data'),
     State('lines-state', 'data'),
+    State('selected-nodes','data'),
     prevent_initial_call=True
 )
-def highlight_nodes(tapped_node_data, weights, lines_data, lines_state):
-
-    global selected_nodes
+def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected_nodes):
 
 
+    new_selected_nodes = selected_nodes
+    
+    
     if weights:
         edge_style = [{'selector': 'edge', 'style': {'label': 'data(weight)', 'text-background-color': 'white',
                         'text-background-opacity': 0.8}}]
@@ -440,7 +455,7 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state):
         linedict = lines_data[1]
         l = lines_data[2]
         d = lines_data[3]
-        n = len(G.nodes())
+        n = lines_data[4]
         
         if l == n:
             
@@ -464,15 +479,15 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state):
         if tapped_node_data:
             node_id = tapped_node_data['id']
             if node_id not in selected_nodes:
-                selected_nodes.append(node_id)
+                new_selected_nodes.append(node_id)
     
         
-        if len(selected_nodes) == 1: #Un nodo seleccionado
-            message = 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr  + '. Diámetro: ' + str(d) + '.\n' + 'Nodo ' + selected_nodes[0] + ' seleccionado.'
+        if len(new_selected_nodes) == 1: #Un nodo seleccionado
+            message = 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr  + '. Diámetro: ' + str(d) + '.\n' + 'Nodo ' + new_selected_nodes[0] + ' seleccionado.'
         
-        if len(selected_nodes) == 2: #Dos nodos seleccionados
+        if len(new_selected_nodes) == 2: #Dos nodos seleccionados
             
-            S=[int(selected_nodes[0]), int(selected_nodes[1])]
+            S=[int(new_selected_nodes[0]), int(new_selected_nodes[1])]
     
             S.sort() #Se ordena el par para grafos no dirigidos
             
@@ -484,12 +499,12 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state):
             stylesheet = [{'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
                 'text-halign': 'center'}}] + [{'selector': f'[id = "{v}"]', 'style': {'background-color': 'red'}} for v in line ] + edge_style #Se cambia el color de los vértices de la línea 
             message = 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr + '. Diámetro: ' + str(d) + '.\n' + 'Línea '+ key + ' seleccionada.'+ '\nLínea: '+  str(line) + '.' + '\nPares generadores: ' + str(linedict[str(line)]) + '.'
-            selected_nodes.clear() #Se borran los nodos selccionados
+            new_selected_nodes=[] #Se borran los nodos selccionados
     
             
 
     
-    return stylesheet, message
+    return stylesheet, message, new_selected_nodes
 
 
 @app.callback(
@@ -497,9 +512,13 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state):
     Input("download-btn", "n_clicks"),
     State('lines', 'data'),
     State('lines-state', 'data'),
+    State('graph-dict', 'data'),
     prevent_initial_call=True,
 )
-def donwnload(n_clicks, lines_data, lines_state):
+def donwnload(n_clicks, lines_data, lines_state, graph_dict):
+
+    g_dict = graph_dict[0]
+    G = g_dict_to_nx(g_dict)
     
     nodes = str(G.nodes())
     edges = str(G.edges(data=True))
@@ -510,8 +529,8 @@ def donwnload(n_clicks, lines_data, lines_state):
     if lines_state:
         pairdict =  lines_data[0]
         linedict = lines_data[1]
-        strD = lines_data[4]
-        strB = lines_data[5]
+        strD = lines_data[5]
+        strB = lines_data[6]
         
 
     else:
