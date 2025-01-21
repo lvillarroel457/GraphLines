@@ -7,6 +7,7 @@ from line_functions import FW, Betweenness, lines, matrixtolinesdict
 from process_functions import weighted_edges_input, remove_edges_process, remove_vertices_process, nx_to_cytoscape_elements
 
 app = Dash(__name__)
+app.server = server
 
 G = nx.Graph() # Se crea el grafo.
 selected_nodes = [] #Lista para guardar los nodos seleccionados de forma interactiva
@@ -527,4 +528,4 @@ def donwnload(n_clicks, lines_data, lines_state):
 
     
 if __name__ == '__main__':
-    app.run(debug=True, port=8050)
+    app.run(debug=True)
