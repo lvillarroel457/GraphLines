@@ -9,7 +9,6 @@ from process_functions import weighted_edges_input, remove_edges_process, remove
 
 
 app = Dash(__name__)
-app.server = server
 
 G = nx.DiGraph() # Se crea el grafo.
 selected_nodes = [] #Lista para guardar los nodos seleccionados de forma interactiva
@@ -547,4 +546,4 @@ def donwnload(n_clicks, lines_data, lines_state):
 
     
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port= 8050)
