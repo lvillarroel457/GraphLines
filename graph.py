@@ -760,7 +760,7 @@ def donwnload(n_clicks, lines_data, lines_state, graph_dict, graph_dict_counter)
         strD = ''
         strB = ''
 
-    content = 'Nodos: '+ nodes + '\n \n' + 'Aristas: ' + edges + '\n \n \n' + 'Matriz de adyacencia: \n' + strA + '\n \n ' + 'Matriz de distancias: \n' + strD + '\n \n \n' + 'Betweenness: '+ strB + '\n \n \n' + 'Diccionario par-línea:  ' + str(pairdict) + '\n \n' +  'Diccionario línea-pares:  ' + str(linedict) +'\n\n\n'
+    content = 'Nodos: '+ nodes + '\n \n' + 'Aristas: ' + edges + '\n \n \n' + 'Matriz de adyacencia: \n' + strA + '\n \n' + 'Matriz de distancias: \n' + strD + '\n \n \n' + 'Betweenness: '+ strB + '\n \n \n' + 'Diccionario par-línea:  ' + str(pairdict) + '\n \n' +  'Diccionario línea-pares:  ' + str(linedict) +'\n\n\n'
     
     
     return dict(content=content, filename="graphlines.txt")
