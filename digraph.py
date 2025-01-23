@@ -16,7 +16,9 @@ stylesheet = [{'selector': 'node', 'style': {'label': 'data(label)', 'text-valig
 
 
 app.layout = html.Div([
-    html.Div(dcc.Store(id='graph-dict', data=[{'nodes': 0, 'edges': []}])), #Para guardar el digrafo
+    html.Div(dcc.Store(id='graph-dict', data=[{'nodes': 0, 'edges': []}, {'nodes': 0, 'edges': []}])), #Para guardar el grafo.
+    html.Div(dcc.Store(id='graph-dict-counter', data=[0])),#Guarda en que posición del graph-dict data esta el grafo que se está visualizando
+    html.Div(dcc.Store(id='undo-state', data=False)),#Si data=True, se puede deshacer, sino, no.
     html.Div(dcc.Store(id='selected-nodes', data=[])), #Lista para guardar los nodos seleccionados de forma interactiva
     html.Div(dcc.Store(id='lines', data=[])), #Para guardar y actualizar las líneas.
     html.Div(dcc.Store(id='lines-state', data=False)), #Si data=True, las líneas están actualizadas, si data=False, no.
@@ -64,6 +66,9 @@ app.layout = html.Div([
                         
     html.Div(id='lines-state-info', children='', style={'display': 'inline-block', 'marginLeft': '6px', 'minWidth': '216px'}), #Texto con información sobre el estado de las líneas.
     html.Div([
+    html.Button("Deshacer", id="undo-btn",  n_clicks=0), #Botón para deshacer.
+], style={'display': 'inline-block', 'marginLeft': '4px'}),
+    html.Div([
     html.Button("Descargar", id="download-btn"), #Botón para descargar información.
     dcc.Download(id="download-info")
 ], style={'display': 'inline-block', 'marginLeft': '4px'}),
@@ -80,13 +85,15 @@ app.layout = html.Div([
 
 # Callback 1: Edición del grafo
 @app.callback(
+    Output('undo-state', 'data', allow_duplicate=True),  
     Output('graph-dict', 'data'),
-    Output('graph', 'elements'),
+    Output('graph-dict-counter', 'data', allow_duplicate=True),
+    Output('graph', 'elements', allow_duplicate=True),
     Output('lines-state-info', 'children', allow_duplicate=True),
     Output('lines-state', 'data', allow_duplicate=True),
     Output('lines-info', 'children', allow_duplicate=True),
     Output('graph', 'stylesheet', allow_duplicate=True),
-    Output('graph', 'layout'),
+    Output('graph', 'layout', allow_duplicate=True),
     Output("pos-checklist", "value"),
     Output('add-vertices-input', 'value'),
      Output('add-edges-input', 'value'),
@@ -109,15 +116,19 @@ app.layout = html.Div([
     State("pos-checklist", "value"),
     State('lines-state', 'data'),
     State('graph-dict', 'data'),
+     State('graph-dict-counter', 'data'),
     prevent_initial_call=True
 )
 def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks, 
                  add_v_submit, add_e_submit, remove_v_submit, remove_e_submit,
-                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state, graph_dict):
+                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state, graph_dict, graph_dict_counter):
 
 
-    g_dict = graph_dict[0]
+    i = graph_dict_counter[0]
+    g_dict = graph_dict[i]
     G = d_dict_to_nx(g_dict)
+
+    new_undo_state = False 
     
     new_pos = position
     
@@ -172,6 +183,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
                 
                 layout={'name': 'cose'}
 
+            new_undo_state = True     
+
         except:
 
             message2 = 'Error en el input. Intente de nuevo.'
@@ -199,6 +212,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
             if not position:
                 
                 layout={'name': 'cose'}
+
+            new_undo_state = True     
 
         except:
 
@@ -228,6 +243,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
                 
                 layout={'name': 'cose'}
 
+            new_undo_state = True     
+
 
         except:
             
@@ -255,6 +272,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
                 
                 layout={'name': 'cose'}
 
+            new_undo_state = True     
+
         except:
 
             message2 = 'Error en el input. Intente de nuevo.'
@@ -278,19 +297,105 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         new_remove_edges_input = ''
 
 
+        new_undo_state = True 
+
+
     
     
     elements = nx_to_cytoscape_elements(G)
 
-    new_dict = nx_to_dict(G)
-    new_graph_dict = [new_dict]
+    new_graph_dict_counter = graph_dict_counter
+    new_graph_dict_counter[0]=(new_graph_dict_counter[0]+1)%2
+    new_g_dict = nx_to_dict(G)
+    new_graph_dict = graph_dict
+    new_i=new_graph_dict_counter[0]
+    new_graph_dict[new_i] = new_g_dict
 
     
-    return new_graph_dict, elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input
+    return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input
 
 
 
-# Callback 2: Pesos
+
+#Callback 2: Deshacer
+@app.callback(
+        Output('undo-state', 'data', allow_duplicate=True), 
+        Output('graph', 'elements', allow_duplicate=True),
+        Output('graph-dict-counter', 'data', allow_duplicate=True),
+        Output('lines-state-info', 'children', allow_duplicate=True),
+        Output('lines-state', 'data', allow_duplicate=True),
+        Output('lines-info', 'children', allow_duplicate=True),
+        Output('graph', 'layout', allow_duplicate=True),
+        Input('undo-btn', 'n_clicks'),
+        State('graph-dict', 'data'),
+        State('graph-dict-counter', 'data'),
+        State('undo-state', 'data'),
+        State('lines-state', 'data'),
+        State("pos-checklist", "value"),
+        prevent_initial_call=True,
+        )
+def undo_func(undo_clicks, graph_dict, graph_dict_counter, undo_state, lines_state, position):
+
+
+    if position:
+
+        layout={'name': 'preset', 'fit': False}
+            
+
+    else:
+
+        layout={'name': 'cose'}
+
+
+    message2 = ''
+
+    new_undo_state = False
+
+    if undo_state:
+        i = graph_dict_counter[0]
+        new_i = (i-1)%2 
+        g_dict = graph_dict[new_i]
+        G = d_dict_to_nx(g_dict)
+
+        
+
+        elements = nx_to_cytoscape_elements(G)
+
+        new_graph_dict_counter = graph_dict_counter
+        new_graph_dict_counter[0] = new_i
+
+        message1 = 'Líneas no actualizadas.'
+        new_lines_state = False
+
+    else:
+
+        i = graph_dict_counter[0]
+        g_dict = graph_dict[i]
+        G = d_dict_to_nx(g_dict)
+
+        
+
+        elements = nx_to_cytoscape_elements(G)
+
+        new_graph_dict_counter = graph_dict_counter
+
+        new_lines_state = lines_state
+
+        if lines_state:
+
+            message1 = 'Líneas actualizadas.'
+
+        else:
+
+            message1 = 'Líneas no actualizadas.'    
+
+
+
+
+    return new_undo_state, elements, new_graph_dict_counter, message1, new_lines_state,  message2, layout 
+
+
+# Callback 3: Pesos
 @app.callback(
     Output('graph', 'stylesheet', allow_duplicate=True),
     Output('lines-info', 'children', allow_duplicate=True),
@@ -322,7 +427,7 @@ def weight_checklists(weights):
     
 
 
-# Callback 3: Calcular líneas
+# Callback 4: Calcular líneas
 @app.callback(
     Output('lines', 'data'),
     Output('lines-state-info', 'children', allow_duplicate=True),
@@ -333,12 +438,14 @@ def weight_checklists(weights):
     State('lines', 'data'),
     State('lines-state', 'data'),
     State('graph-dict', 'data'),
+    State('graph-dict-counter', 'data'),
     prevent_initial_call=True
 )
-def calculate_lines(lines_click, lines_data, lines_state, graph_dict):
+def calculate_lines(lines_click, lines_data, lines_state, graph_dict, graph_dict_counter):
 
 
-    g_dict = graph_dict[0]
+    i = graph_dict_counter[0]
+    g_dict = graph_dict[i]
     G = d_dict_to_nx(g_dict)
 
     triggered_id = ctx.triggered_id
@@ -429,7 +536,7 @@ def calculate_lines(lines_click, lines_data, lines_state, graph_dict):
 
 
 
-# Callback 4: Visualización de las líneas
+# Callback 5: Visualización de las líneas
 @app.callback(
      Output('graph', 'stylesheet', allow_duplicate=True),
      Output('lines-info', 'children', allow_duplicate=True),
@@ -522,17 +629,20 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
     return stylesheet, message, new_selected_nodes
 
 
+#Callback 6: Descargar
 @app.callback(
     Output("download-info", "data"),
     Input("download-btn", "n_clicks"),
     State('lines', 'data'),
     State('lines-state', 'data'),
     State('graph-dict', 'data'),
+    State('graph-dict-counter', 'data'),
     prevent_initial_call=True,
 )
-def donwnload(n_clicks, lines_data, lines_state, graph_dict):
+def donwnload(n_clicks, lines_data, lines_state, graph_dict, graph_dict_counter):
 
-    g_dict = graph_dict[0]
+    i = graph_dict_counter[0]
+    g_dict = graph_dict[i]
     G = d_dict_to_nx(g_dict)
     
     nodes = str(G.nodes())
