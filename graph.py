@@ -113,17 +113,20 @@ app.layout = html.Div([
     State('lines-state', 'data'),
     State('graph-dict', 'data'),
     State('graph-dict-counter', 'data'),
+    State('undo-state', 'data'),
+
     prevent_initial_call=True
 )
 def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks,
                  add_v_submit, add_e_submit, remove_v_submit, remove_e_submit,
-                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state, graph_dict, graph_dict_counter):
+                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state, graph_dict, graph_dict_counter, undo_state):
 
     i = graph_dict_counter[0]
     g_dict = graph_dict[i]
     G = g_dict_to_nx(g_dict)
 
-    new_undo_state = False 
+    new_undo_state = undo_state
+    new_i = i
 
     new_pos = position
 
@@ -175,7 +178,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
                 
                 layout={'name': 'cose'}
 
-            new_undo_state = True     
+            new_undo_state = True  
+            new_i = (i+1)%2   
 
 
         except:
@@ -207,7 +211,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
                 layout={'name': 'cose'}
 
 
-            new_undo_state = True    
+            new_undo_state = True
+            new_i = (i+1)%2    
 
         except:
 
@@ -238,7 +243,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
                 layout={'name': 'cose'}
 
 
-            new_undo_state = True    
+            new_undo_state = True
+            new_i = (i+1)%2    
             
         except:
 
@@ -267,7 +273,8 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
                 layout={'name': 'cose'}
 
 
-            new_undo_state = True    
+            new_undo_state = True
+            new_i = (i+1)%2    
             
         except:
 
@@ -290,17 +297,17 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         new_remove_edges_input = ''
 
         new_undo_state = True
+        new_i = (i+1)%2
     
     
 
     elements = nx_to_cytoscape_elements(G)
 
     new_graph_dict_counter = graph_dict_counter
-    new_graph_dict_counter[0]=(new_graph_dict_counter[0]+1)%2
+    new_graph_dict_counter[0] = new_i
 
     new_g_dict = nx_to_dict(G)
     new_graph_dict = graph_dict
-    new_i=new_graph_dict_counter[0]
     new_graph_dict[new_i] = new_g_dict
 
 
