@@ -43,6 +43,7 @@ app.layout = html.Div([
 
     html.Div(dcc.Checklist(["Pesos"], [], id="weight-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '6px', 'marginLeft': '2px'}), #Checklist; si está seleccionada (['Pesos']), se muestran los pesos de las aristas, si no, no.
     html.Div(dcc.Checklist(["Fijar"], [], id="pos-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '8px'}),
+    html.Div(dcc.Checklist(["Modificar"], ["Modificar"], id="mod-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '8px'}),
     html.Div([
         dcc.Input(id='add-vertices-input', type='text', placeholder="Ej: 5", style={'width': '70px'}, autoComplete='off'), #Input para agregar vértices.
         html.Button("Agregar nodos", id="add-vertices-btn", n_clicks=0), #Botón para agregar vértices.
@@ -86,7 +87,7 @@ app.layout = html.Div([
 # Callback 1: Edición del grafo
 @app.callback(
     Output('undo-state', 'data', allow_duplicate=True),  
-    Output('graph-dict', 'data'),
+    Output('graph-dict', 'data', allow_duplicate=True),
     Output('graph-dict-counter', 'data', allow_duplicate=True),
     Output('graph', 'elements', allow_duplicate=True),
     Output('lines-state-info', 'children', allow_duplicate=True),
@@ -538,23 +539,71 @@ def calculate_lines(lines_click, lines_data, lines_state, graph_dict, graph_dict
         
 
 
-
-
-
-
-# Callback 5: Visualización de las líneas
+# Callback 5: Modificar
 @app.callback(
-     Output('graph', 'stylesheet', allow_duplicate=True),
-     Output('lines-info', 'children', allow_duplicate=True),
-     Output('selected-nodes', 'data', allow_duplicate=True),
+    Output('selected-nodes', 'data', allow_duplicate=True),
+    Output('lines-info', 'children', allow_duplicate=True),
+    Input("mod-checklist", "value"), #Se activa al apretar la checklist (ya sea para marcar o desmarcar)
+    prevent_initial_call=True
+)
+def weight_checklists(modify):
+
+
+    if modify:
+        message = 'Seleccione 2 nodos para agregar la arista correspondiente.'
+
+    else:
+
+        message = ''
+
+    new_selected_nodes=[]    
+
+    return new_selected_nodes, message    
+
+
+
+
+
+
+
+# Callback 6: Visualización de las líneas
+@app.callback(
+    Output('undo-state', 'data', allow_duplicate=True),    
+    Output('graph-dict', 'data', allow_duplicate=True),
+    Output('graph-dict-counter', 'data', allow_duplicate=True),
+    Output('graph', 'elements', allow_duplicate=True),
+    Output('graph', 'layout', allow_duplicate=True),    
+    Output('graph', 'stylesheet', allow_duplicate=True),
+    Output('lines-info', 'children', allow_duplicate=True),
+    Output('selected-nodes', 'data', allow_duplicate=True),
+    Output('lines-state', 'data', allow_duplicate=True),
     Input('graph', 'tapNodeData'),
     State("weight-checklist", "value"),
     State('lines', 'data'),
     State('lines-state', 'data'),
     State('selected-nodes', 'data'),
+    State("mod-checklist", "value"),
+    State('graph-dict', 'data'),
+    State('graph-dict-counter', 'data'),
+    State('undo-state', 'data'),
     prevent_initial_call=True
 )
-def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected_nodes):
+def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected_nodes, modify, graph_dict, graph_dict_counter, undo_state):
+
+
+    new_lines_state = lines_state
+
+    layout={'name': 'preset', 'fit': False}
+
+    message = ''
+            
+    i = graph_dict_counter[0]
+    g_dict = graph_dict[i]
+    G = d_dict_to_nx(g_dict)
+
+    new_undo_state = undo_state
+    new_i = i
+
 
 
     new_selected_nodes = selected_nodes
@@ -569,73 +618,115 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
         edge_style = [{'selector': 'edge', 'style': {'curve-style': 'bezier','target-arrow-shape': 'triangle'}}]
 
 
-    if not lines_state:          
-        stylesheet = [
+    stylesheet = [
         {'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
                     'text-halign': 'center'}}
-        ] + edge_style
-
-        message = "Para la visualización debe actualizar las líneas."
-
-
-    else:                       
-        pairdict =  lines_data[0]
-        linedict = lines_data[1]
-        l = lines_data[2]
-        d = lines_data[3]
-        n = lines_data[4]
-        
-        if l == n:
-            
-            lstr = 'Sí' #Hay línea universal
-            
-        else:
-
-             lstr = 'No' #No hay línea universal
-            
-         
-       
-        
-               
-        stylesheet = [
-            {'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
-                        'text-halign': 'center'}}
         ] + edge_style
     
 
 
+    if modify:
 
         if tapped_node_data:
             node_id = tapped_node_data['id']
             if node_id not in selected_nodes:
                 new_selected_nodes.append(node_id)
-    
-        
-        if len(new_selected_nodes) == 1: #Un nodo seleccionado
-            message = 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr + '. Diámetro: ' + str(d) + '.\n' + 'Nodo ' + new_selected_nodes[0] + ' seleccionado.'
-        
-        if len(new_selected_nodes) == 2: #Dos nodos seleccionados
             
-            S=[int(new_selected_nodes[0]), int(new_selected_nodes[1])]
-    
             
-            key='('+ str(S[0])+','+ str(S[1])+')'  #Par
-            
+        if len(new_selected_nodes) == 1: 
 
-            line = pairdict[key] #Línea asociada al par
-            
-            stylesheet = [{'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
-                'text-halign': 'center'}}] + [{'selector': f'[id = "{v}"]', 'style': {'background-color': 'red'}} for v in line ] + edge_style #Se cambia el color de los vértices de la línea 
-            message = 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr + '. Diámetro: ' + str(d) + '.\n' + 'Línea '+ key + ' seleccionada.'+ '\nLínea: '+  str(line) + '.' + '\nPares generadores: ' + str(linedict[str(line)]) + '.'
-            new_selected_nodes = [] #Se borran los nodos selccionados
-    
-            
+            message = 'Nodo ' + new_selected_nodes[0] + ' seleccionado.'   + ' \nSeleccione otro nodo para agregar la arista.'  
 
-    
-    return stylesheet, message, new_selected_nodes
+        if len(new_selected_nodes) == 2:
+
+            u = int(new_selected_nodes[0]) 
+            v = int(new_selected_nodes[1])  
+            G.add_weighted_edges_from([(u,v,1)])    
+            new_undo_state = True
+            new_i = (i+1)%2
+
+            new_selected_nodes = []
+
+            new_lines_state = False
 
 
-#Callback 6: Descargar
+    else:    
+
+        if not lines_state:          
+            stylesheet = [
+            {'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
+                        'text-halign': 'center'}}
+            ] + edge_style
+
+            message = "Para la visualización debe actualizar las líneas."
+
+
+        else:                       
+            pairdict =  lines_data[0]
+            linedict = lines_data[1]
+            l = lines_data[2]
+            d = lines_data[3]
+            n = lines_data[4]
+            
+            if l == n:
+                
+                lstr = 'Sí' #Hay línea universal
+                
+            else:
+
+                    lstr = 'No' #No hay línea universal
+                
+                
+            
+            
+                    
+            stylesheet = [
+                {'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
+                            'text-halign': 'center'}}
+            ] + edge_style
+
+
+
+
+            if tapped_node_data:
+                node_id = tapped_node_data['id']
+                if node_id not in selected_nodes:
+                    new_selected_nodes.append(node_id)
+
+            
+            if len(new_selected_nodes) == 1: #Un nodo seleccionado
+                message = 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr + '. Diámetro: ' + str(d) + '.\n' + 'Nodo ' + new_selected_nodes[0] + ' seleccionado.'
+            
+            if len(new_selected_nodes) == 2: #Dos nodos seleccionados
+                
+                S=[int(new_selected_nodes[0]), int(new_selected_nodes[1])]
+
+                
+                key='('+ str(S[0])+','+ str(S[1])+')'  #Par
+                
+
+                line = pairdict[key] #Línea asociada al par
+                
+                stylesheet = [{'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
+                    'text-halign': 'center'}}] + [{'selector': f'[id = "{v}"]', 'style': {'background-color': 'red'}} for v in line ] + edge_style #Se cambia el color de los vértices de la línea 
+                message = 'Cantidad de líneas: '+ str(len(linedict.keys())) + '. Línea universal: ' + lstr + '. Diámetro: ' + str(d) + '.\n' + 'Línea '+ key + ' seleccionada.'+ '\nLínea: '+  str(line) + '.' + '\nPares generadores: ' + str(linedict[str(line)]) + '.'
+                new_selected_nodes = [] #Se borran los nodos selccionados
+
+
+    elements = nx_to_cytoscape_elements(G)
+
+    new_graph_dict_counter = graph_dict_counter
+    new_graph_dict_counter[0] = new_i
+
+    new_g_dict = nx_to_dict(G)
+    new_graph_dict = graph_dict
+    new_graph_dict[new_i] = new_g_dict        
+
+    
+    return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, layout, stylesheet, message, new_selected_nodes, new_lines_state
+
+
+#Callback 7: Descargar
 @app.callback(
     Output("download-info", "data"),
     Input("download-btn", "n_clicks"),
