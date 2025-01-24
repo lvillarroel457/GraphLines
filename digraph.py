@@ -582,6 +582,7 @@ def weight_checklists(modify):
     Output('lines-info', 'children', allow_duplicate=True),
     Output('selected-nodes', 'data', allow_duplicate=True),
     Output('lines-state', 'data', allow_duplicate=True),
+    Output('clicked-edge-weight', 'value'),
     Input('graph', 'tapNodeData'),
     State("weight-checklist", "value"),
     State('lines', 'data'),
@@ -598,6 +599,8 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
 
 
     new_lines_state = lines_state
+
+    new_clicked_edge_weight = clicked_edge_weight
 
     layout={'name': 'preset', 'fit': False}
 
@@ -663,6 +666,8 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
                 new_selected_nodes = []
 
                 new_lines_state = False
+
+                new_clicked_edge_weight = ''
 
             except:
 
@@ -746,7 +751,7 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
     new_graph_dict[new_i] = new_g_dict        
 
     
-    return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, layout, stylesheet, message, new_selected_nodes, new_lines_state
+    return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, layout, stylesheet, message, new_selected_nodes, new_lines_state, new_clicked_edge_weight
 
 
 #Callback 7: Descargar
