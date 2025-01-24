@@ -29,25 +29,30 @@ app.layout = html.Div([
     'fontSize': 20,
     'whiteSpace': 'pre-wrap',  # Ensures wrapping and respects newlines
     'overflowWrap': 'break-word',  # Breaks long words to fit within the div
-    'padding': '30px',  # Internal spacing
-    'margin': '30px',   # External spacing
-    'width': '90%',     # Adjust width
+    'padding': '25px',  # Internal spacing
+    'margin': '15px',   # External spacing
+    'width': '92%',     # Adjust width
     'border': '1px solid lightgray',  # Optional: Add a border for clarity
     'borderRadius': '5px',  # Rounded corners for the border
     'boxShadow': '0px 4px 6px rgba(0, 0, 0, 0.1)',  # Add a shadow for better aesthetics
     'backgroundColor': 'white',  # Background color for better contrast
     'lineHeight': '1.4',  # Adjust line height for better readability
-    'minHeight': '140px',  # Ensure a minimum height for the div
+    'minHeight': '160px',  # Ensure a minimum height for the div
     'overflowY': 'auto',  # Add scroll if the text overflows vertically
+    'marginLeft': '20px'
     }),  
 
     html.Div(dcc.Checklist(["Pesos"], [], id="weight-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '6px', 'marginLeft': '2px'}), #Checklist; si está seleccionada (['Pesos']), se muestran los pesos de las aristas, si no, no.
     html.Div(dcc.Checklist(["Fijar"], [], id="pos-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '8px'}),
-    html.Div(dcc.Checklist(["Modificar"], ["Modificar"], id="mod-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '8px'}),
+    html.Div(dcc.Checklist(["Modificar"], ["Modificar"], id="mod-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '1px'}),
+    html.Div(
+        dcc.Input(id='clicked-edge-weight', type='text', placeholder="Ej: 3", style={'width': '40px'}, autoComplete='off'), #Input para agregar vértices.
+        style={'display': 'inline-block', 'marginRight': '4px','padding': '2px' }),  
+    html.Br(), 
     html.Div([
-        dcc.Input(id='add-vertices-input', type='text', placeholder="Ej: 5", style={'width': '70px'}, autoComplete='off'), #Input para agregar vértices.
+        dcc.Input(id='add-vertices-input', type='text', placeholder="Ej: 5", style={'width': '60px'}, autoComplete='off'), #Input para agregar vértices.
         html.Button("Agregar nodos", id="add-vertices-btn", n_clicks=0), #Botón para agregar vértices.
-    ], style={'display': 'inline-block', 'marginRight': '2px'}), 
+    ], style={'display': 'inline-block', 'marginRight': '2px', 'marginLeft': '4px'}), 
     html.Div([
         dcc.Input(id='add-edges-input', type='text', placeholder="Ej: 0-1, 3-5:4, 2-1", style={'width': '120px'}, autoComplete='off'), #Input para agregar aristas.
         html.Button("Agregar aristas", id="add-edges-btn", n_clicks=0), #Botón para agregar aristas.
@@ -586,9 +591,10 @@ def weight_checklists(modify):
     State('graph-dict', 'data'),
     State('graph-dict-counter', 'data'),
     State('undo-state', 'data'),
+    State('clicked-edge-weight', 'value'),
     prevent_initial_call=True
 )
-def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected_nodes, modify, graph_dict, graph_dict_counter, undo_state):
+def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected_nodes, modify, graph_dict, graph_dict_counter, undo_state, clicked_edge_weight):
 
 
     new_lines_state = lines_state
@@ -639,15 +645,32 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
 
         if len(new_selected_nodes) == 2:
 
-            u = int(new_selected_nodes[0]) 
-            v = int(new_selected_nodes[1])  
-            G.add_weighted_edges_from([(u,v,1)])    
-            new_undo_state = True
-            new_i = (i+1)%2
+            try:
 
-            new_selected_nodes = []
+                if clicked_edge_weight:
 
-            new_lines_state = False
+                    w = int(clicked_edge_weight)
+
+                else:
+                    w = 1    
+
+                u = int(new_selected_nodes[0]) 
+                v = int(new_selected_nodes[1])  
+                G.add_weighted_edges_from([(u,v,w)])    
+                new_undo_state = True
+                new_i = (i+1)%2
+
+                new_selected_nodes = []
+
+                new_lines_state = False
+
+            except:
+
+                new_selected_nodes = []
+
+                message = 'Error en el input. Intente de nuevo.'
+
+
 
 
     else:    
