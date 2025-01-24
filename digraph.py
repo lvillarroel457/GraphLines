@@ -178,6 +178,9 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
 
         try:
             vertices = int(add_vertices_input)
+
+            assert (vertices > 0) 
+
             n = len(G.nodes())
             G.add_nodes_from(range(n, n + vertices))
             
@@ -656,6 +659,8 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
 
                 else:
                     w = 1    
+
+                assert ( w > 0 )     
 
                 u = int(new_selected_nodes[0]) 
                 v = int(new_selected_nodes[1])  

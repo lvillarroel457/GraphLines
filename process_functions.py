@@ -79,6 +79,9 @@ def weighted_edges_input(input):
         if len(wedge)==1: #No hay peso
             L3.append(tuple([int(v) for v in wedge[0].split('-')]+[1])) #Se pone peso 1 
         elif len(wedge)==2: #Hay peso
+
+            assert (int(wedge[1]) > 0)
+
             L3.append(tuple([int(v) for v in wedge[0].split('-')]+[int(wedge[1])]))
 
         else:
