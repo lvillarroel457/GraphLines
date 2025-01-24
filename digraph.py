@@ -105,6 +105,7 @@ app.layout = html.Div([
      Output('add-edges-input', 'value'),
      Output('remove-vertices-input', 'value'),
      Output('remove-edges-input', 'value'),
+     Input('graph', 'tapEdgeData'),
     Input('add-vertices-btn', 'n_clicks'),
      Input('add-edges-btn', 'n_clicks'),
      Input('remove-vertices-btn', 'n_clicks'),
@@ -124,11 +125,12 @@ app.layout = html.Div([
     State('graph-dict', 'data'),
      State('graph-dict-counter', 'data'),
      State('undo-state', 'data'),
+     State("mod-checklist", "value"),
     prevent_initial_call=True
 )
-def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks, 
+def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks, 
                  add_v_submit, add_e_submit, remove_v_submit, remove_e_submit,
-                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state, graph_dict, graph_dict_counter, undo_state):
+                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state, graph_dict, graph_dict_counter, undo_state, modify):
 
 
     i = graph_dict_counter[0]
@@ -315,6 +317,21 @@ def update_graph(add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, c
         new_undo_state = True 
         new_i = (i+1)%2  
 
+
+    elif triggered_id == 'graph':
+
+        if modify:
+
+            u = int(tapped_edge_data['source'])   
+            v = int(tapped_edge_data['target'])   
+            G.remove_edges_from([(u,v)])  
+
+            message1 = 'Líneas no actualizadas.'
+
+            new_lines_state = False
+
+            new_undo_state = True
+            new_i = (i+1)%2  
 
     
     
