@@ -101,6 +101,7 @@ app.layout = html.Div([
      Output('add-edges-input', 'value'),
      Output('remove-vertices-input', 'value'),
      Output('remove-edges-input', 'value'),
+     Output('selected-nodes', 'data', allow_duplicate=True),
      Input('graph', 'tapEdgeData'),
     Input('add-vertices-btn', 'n_clicks'),
      Input('add-edges-btn', 'n_clicks'),
@@ -142,6 +143,8 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
     new_add_edges_input = add_edges_input
     new_remove_vertices_input = remove_vertices_input
     new_remove_edges_input = remove_edges_input
+
+    new_selected_nodes = []
     
 
     if weights: #Si está seleccionado Pesos en el checklist
@@ -339,7 +342,7 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
     new_graph_dict[new_i] = new_g_dict
 
 
-    return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input
+    return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input, new_selected_nodes
 
 
 #Callback 2: Deshacer
