@@ -78,7 +78,7 @@ app.layout = html.Div([
      html.Div([html.Button("Actualizar líneas", id="lines-btn", n_clicks=0), #Botón para actualizar las líneas.
     ], style={'display': 'inline-block'}),
                         
-    html.Div(id='lines-state-info', children='', style={'display': 'inline-block', 'marginLeft': '6px', 'minWidth': '180px'}), #Texto con información sobre el estado de las líneas.
+    html.Div(id='lines-state-info', children='', style={'display': 'inline-block', 'marginLeft': '6px', 'minWidth': '220px'}), #Texto con información sobre el estado de las líneas.
     html.Div([
     html.Button("Descargar", id="download-btn"), #Botón para descargar información.
     dcc.Download(id="download-info")
