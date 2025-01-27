@@ -5,12 +5,12 @@ def nx_to_dict(G):
     '''
     Recibe un grafo o digrafo de networkx con pesos y retorna un diccionario con 2 llaves; 'nodes' y 'edges'.
     El valor de 'nodes' es la cantidad de nodos del grafo. 
-    El valor de 'edges' es una lista con todas las aristas o arcos en forma de tuplas de tamaño 3. El tercer elemento de la tupla es el peso. Si el grafo es dirigido la dirección es de izuierda a derecha.
+    El valor de 'edges' es una lista con todas las aristas o arcos en forma de listas de tamaño 3. El tercer elemento de la lista es el peso. Si el grafo es dirigido la dirección es de izuierda a derecha.
     
     '''
     
     
-    edges = [(e[0], e[1], e[2]['weight']) for e in G.edges(data=True)] 
+    edges = [[e[0], e[1], e[2]['weight']] for e in G.edges(data=True)] 
     dict = {'nodes': len(G.nodes()), 'edges': edges}
     
     return dict
@@ -27,8 +27,10 @@ def g_dict_to_nx(dict):
     '''
     
     n = dict['nodes']
-    edges = dict['edges']
+    pre_edges = dict['edges']
+    edges = [(e[0], e[1], e[2]) for e in pre_edges] 
     
+
     G = nx.Graph()
     
     G.add_nodes_from(range(n))
@@ -47,7 +49,8 @@ def d_dict_to_nx(dict):
     '''
     
     n = dict['nodes']
-    edges = dict['edges']
+    pre_edges = dict['edges']
+    edges = [(e[0], e[1], e[2]) for e in pre_edges] 
     
     G = nx.DiGraph()
     

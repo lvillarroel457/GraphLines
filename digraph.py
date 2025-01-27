@@ -2,6 +2,7 @@ from dash import Dash, dcc, html, Input, Output, State, ctx
 import dash_cytoscape as cyto
 import networkx as nx
 import numpy as np
+import ast
 
 
 from line_functions import FW, Betweenness, lines, matrixtolinesdict
@@ -48,6 +49,10 @@ app.layout = html.Div([
     html.Div(
         dcc.Input(id='clicked-edge-weight', type='text', placeholder="Ej: 3", style={'width': '40px'}, autoComplete='off'), #Input para agregar vértices.
         style={'display': 'inline-block', 'marginRight': '4px','padding': '2px' }),  
+    html.Div([
+        dcc.Input(id='add-from-dict-input', type='text', placeholder="Formato de diccionario dado por descargar.", style={'width': '400px'}, autoComplete='off'), #Input para agregar vértices.
+        html.Button("Cargar desde diccionario", id="add-from-dict-btn", n_clicks=0), #Botón para agregar vértices.
+    ], style={'display': 'inline-block', 'marginRight': '2px', 'marginLeft': '240px'}),     
     html.Br(), 
     html.Div([
         dcc.Input(id='add-vertices-input', type='text', placeholder="Ej: 5", style={'width': '60px'}, autoComplete='off'), #Input para agregar vértices.
@@ -105,6 +110,7 @@ app.layout = html.Div([
      Output('add-edges-input', 'value'),
      Output('remove-vertices-input', 'value'),
      Output('remove-edges-input', 'value'),
+     Output('add-from-dict-input', 'value'),
      Output('selected-nodes', 'data', allow_duplicate=True),
      Input('graph', 'tapEdgeData'),
     Input('add-vertices-btn', 'n_clicks'),
@@ -112,14 +118,17 @@ app.layout = html.Div([
      Input('remove-vertices-btn', 'n_clicks'),
      Input('remove-edges-btn', 'n_clicks'), 
     Input('clear-graph-btn', 'n_clicks'), 
+    Input('add-from-dict-btn', 'n_clicks'),
     Input('add-vertices-input', 'n_submit'),
      Input('add-edges-input', 'n_submit'),
      Input('remove-vertices-input', 'n_submit'),
      Input('remove-edges-input', 'n_submit'),
+     Input('add-from-dict-input', 'n_submit'),
     State('add-vertices-input', 'value'),
      State('add-edges-input', 'value'),
      State('remove-vertices-input', 'value'),
      State('remove-edges-input', 'value'),
+     State('add-from-dict-input', 'value'),
     State("weight-checklist", "value"),
     State("pos-checklist", "value"),
     State('lines-state', 'data'),
@@ -129,9 +138,9 @@ app.layout = html.Div([
      State("mod-checklist", "value"),
     prevent_initial_call=True
 )
-def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks, 
-                 add_v_submit, add_e_submit, remove_v_submit, remove_e_submit,
-                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, weights, position, lines_state, graph_dict, graph_dict_counter, undo_state, modify):
+def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks, add_from_dict_clicks,
+                 add_v_submit, add_e_submit, remove_v_submit, remove_e_submit, add_from_dict_submit,
+                 add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, add_from_dict_input, weights, position, lines_state, graph_dict, graph_dict_counter, undo_state, modify):
 
 
     i = graph_dict_counter[0]
@@ -147,6 +156,7 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
     new_add_edges_input = add_edges_input
     new_remove_vertices_input = remove_vertices_input
     new_remove_edges_input = remove_edges_input
+    new_add_from_dict_input = add_from_dict_input
 
     new_selected_nodes = []
 
@@ -299,7 +309,30 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
             message2 = 'Error en el input. Intente de nuevo.'
 
         
+    elif (triggered_id == 'add-from-dict-btn' or triggered_id == 'add-from-dict-input') and add_from_dict_input:
 
+        try:
+
+            G2 = d_dict_to_nx(ast.literal_eval(add_from_dict_input))
+            G = nx.DiGraph(G2)
+
+            message1 = 'Líneas no actualizadas.'
+
+            new_lines_state = False
+
+            new_add_from_dict_input = ''
+
+            if not position:
+                
+                layout={'name': 'cose'}
+
+
+            new_undo_state = True
+            new_i = (i+1)%2   
+
+        except:
+
+            message2 = 'Error en el input. Intente de nuevo.'
 
 
     elif triggered_id == 'clear-graph-btn':
@@ -347,7 +380,7 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
     new_graph_dict[new_i] = new_g_dict
 
     
-    return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input, new_selected_nodes
+    return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input, new_add_from_dict_input, new_selected_nodes
 
 
 
@@ -814,7 +847,7 @@ def donwnload(n_clicks, lines_data, lines_state, graph_dict, graph_dict_counter)
         strD = ''
         strB = ''
 
-    content = 'Nodos: '+ nodes + '\n \n' + 'Aristas: ' + edges + '\n \n \n' + 'Matriz de adyacencia: \n' + strA + '\n \n' + 'Matriz de distancias: \n' + strD +  '\n \n \n' + 'Betweenness: '+ strB + '\n \n \n' +  'Diccionario par-línea:  ' + str(pairdict) + '\n \n' +  'Diccionario línea-pares:  ' + str(linedict)
+    content = 'Diccionario en formato de la aplicación: ' + str(g_dict) + '\n \n \n' + 'Nodos: '+ nodes + '\n \n' + 'Aristas: ' + edges + '\n \n \n' + 'Matriz de adyacencia: \n' + strA + '\n \n' + 'Matriz de distancias: \n' + strD +  '\n \n \n' + 'Betweenness: '+ strB + '\n \n \n' +  'Diccionario par-línea:  ' + str(pairdict) + '\n \n' +  'Diccionario línea-pares:  ' + str(linedict)
     
     
     return dict(content=content, filename="graphlines.txt")
