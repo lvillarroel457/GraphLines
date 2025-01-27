@@ -43,21 +43,21 @@ app.layout = html.Div([
     'marginLeft': '20px'
     }),  
 
-    html.Div(dcc.Checklist(["Pesos"], [], id="weight-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '6px', 'marginLeft': '2px'}), #Checklist; si está seleccionada (['Pesos']), se muestran los pesos de las aristas, si no, no.
-    html.Div(dcc.Checklist(["Fijar"], [], id="pos-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '8px'}),
-    html.Div(dcc.Checklist(["Modificar"], ["Modificar"], id="mod-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '1px'}),
+    html.Div(dcc.Checklist(["Pesos"], [], id="weight-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '6px', 'marginLeft': '8px'}), #Checklist; si está seleccionada (['Pesos']), se muestran los pesos de las aristas, si no, no.
+    html.Div(dcc.Checklist(["Fijar nodos"], [], id="pos-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '8px'}),
+    html.Div(dcc.Checklist(["Modificar digrafo"], ["Modificar digrafo"], id="mod-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '1px'}),
     html.Div(
-        dcc.Input(id='clicked-edge-weight', type='text', placeholder="Ej: 3", style={'width': '40px'}, autoComplete='off'), #Input para agregar vértices.
+        dcc.Input(id='clicked-edge-weight', type='text', placeholder="Ej: 3", style={'width': '80px'}, autoComplete='off'), #Input para agregar vértices.
         style={'display': 'inline-block', 'marginRight': '4px','padding': '2px' }),  
     html.Div([
-        dcc.Input(id='add-from-dict-input', type='text', placeholder="Formato de diccionario dado por descargar.", style={'width': '400px'}, autoComplete='off'), #Input para agregar vértices.
+        dcc.Input(id='add-from-dict-input', type='text', placeholder="Formato de diccionario dado por descargar.", style={'width': '387px'}, autoComplete='off'), #Input para agregar vértices.
         html.Button("Cargar desde diccionario", id="add-from-dict-btn", n_clicks=0), #Botón para agregar vértices.
-    ], style={'display': 'inline-block', 'marginRight': '2px', 'marginLeft': '240px'}),     
+    ], style={'display': 'inline-block', 'marginRight': '2px', 'marginLeft': '123px'}),     
     html.Br(), 
     html.Div([
         dcc.Input(id='add-vertices-input', type='text', placeholder="Ej: 5", style={'width': '60px'}, autoComplete='off'), #Input para agregar vértices.
         html.Button("Agregar nodos", id="add-vertices-btn", n_clicks=0), #Botón para agregar vértices.
-    ], style={'display': 'inline-block', 'marginRight': '2px', 'marginLeft': '4px'}), 
+    ], style={'display': 'inline-block', 'marginRight': '2px', 'marginLeft': '10px'}), 
     html.Div([
         dcc.Input(id='add-edges-input', type='text', placeholder="Ej: 0-1, 3-5:4, 2-1", style={'width': '120px'}, autoComplete='off'), #Input para agregar aristas.
         html.Button("Agregar aristas", id="add-edges-btn", n_clicks=0), #Botón para agregar aristas.
@@ -394,15 +394,33 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
         Output('lines-state', 'data', allow_duplicate=True),
         Output('lines-info', 'children', allow_duplicate=True),
         Output('graph', 'layout', allow_duplicate=True),
+        Output('graph', 'stylesheet', allow_duplicate=True),
         Input('undo-btn', 'n_clicks'),
         State('graph-dict', 'data'),
         State('graph-dict-counter', 'data'),
         State('undo-state', 'data'),
         State('lines-state', 'data'),
         State("pos-checklist", "value"),
+        State("weight-checklist", "value"),
         prevent_initial_call=True,
         )
-def undo_func(undo_clicks, graph_dict, graph_dict_counter, undo_state, lines_state, position):
+def undo_func(undo_clicks, graph_dict, graph_dict_counter, undo_state, lines_state, position, weights):
+
+
+    if weights: #Si está seleccionado Pesos en el checklist
+        
+        edge_style = [{'selector': 'edge', 'style': {'label': 'data(weight)', 'text-background-color': 'white',
+                    'text-background-opacity': 0.8, 'curve-style': 'bezier','target-arrow-shape': 'triangle'}}]
+        
+
+    else:
+        edge_style = [{'selector': 'edge', 'style': {'curve-style': 'bezier','target-arrow-shape': 'triangle'}}]
+
+
+    stylesheet = [
+            {'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
+                        'text-halign': 'center'}}
+        ] + edge_style # Para que al modificar al grafo se deje de ver una línea si es que está destacada    
 
 
     if position:
@@ -460,7 +478,7 @@ def undo_func(undo_clicks, graph_dict, graph_dict_counter, undo_state, lines_sta
 
 
 
-    return new_undo_state, elements, new_graph_dict_counter, message1, new_lines_state,  message2, layout 
+    return new_undo_state, elements, new_graph_dict_counter, message1, new_lines_state,  message2, layout, stylesheet 
 
 
 # Callback 3: Pesos
