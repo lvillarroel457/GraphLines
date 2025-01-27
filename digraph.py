@@ -53,6 +53,9 @@ app.layout = html.Div([
         dcc.Input(id='add-from-dict-input', type='text', placeholder="Formato de diccionario dado por descargar.", style={'width': '387px'}, autoComplete='off'), #Input para agregar vértices.
         html.Button("Cargar desde diccionario", id="add-from-dict-btn", n_clicks=0), #Botón para agregar vértices.
     ], style={'display': 'inline-block', 'marginRight': '2px', 'marginLeft': '123px'}),     
+    html.Div([
+    html.Button("Deshacer", id="undo-btn",  n_clicks=0), #Botón para deshacer.
+], style={'display': 'inline-block', 'marginLeft': '4px'}),
     html.Br(), 
     html.Div([
         dcc.Input(id='add-vertices-input', type='text', placeholder="Ej: 5", style={'width': '60px'}, autoComplete='off'), #Input para agregar vértices.
@@ -75,10 +78,7 @@ app.layout = html.Div([
      html.Div([html.Button("Actualizar líneas", id="lines-btn", n_clicks=0), #Botón para actualizar las líneas.
     ], style={'display': 'inline-block'}),
                         
-    html.Div(id='lines-state-info', children='', style={'display': 'inline-block', 'marginLeft': '6px', 'minWidth': '216px'}), #Texto con información sobre el estado de las líneas.
-    html.Div([
-    html.Button("Deshacer", id="undo-btn",  n_clicks=0), #Botón para deshacer.
-], style={'display': 'inline-block', 'marginLeft': '4px'}),
+    html.Div(id='lines-state-info', children='', style={'display': 'inline-block', 'marginLeft': '6px', 'minWidth': '180px'}), #Texto con información sobre el estado de las líneas.
     html.Div([
     html.Button("Descargar", id="download-btn"), #Botón para descargar información.
     dcc.Download(id="download-info")
