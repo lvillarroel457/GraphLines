@@ -92,7 +92,7 @@ app.layout = html.Div([
 
 # Callback 1: Edición del grafo
 @app.callback(
-    Output('undo-state', 'data', allow_duplicate=True),    
+    Output('undo-state', 'data', allow_duplicate=True),    #Nuevo valor de 'data' para el id 'undo-state'. Esto es análogo para todos los demas inputs. allow_duplicate=True es porque hay otros callbacks con el mismo output.
     Output('graph-dict', 'data', allow_duplicate=True),
     Output('graph-dict-counter', 'data', allow_duplicate=True),
     Output('graph', 'elements', allow_duplicate=True),
@@ -101,47 +101,49 @@ app.layout = html.Div([
     Output('lines-info', 'children', allow_duplicate=True),
     Output('graph', 'stylesheet', allow_duplicate=True),
     Output('graph', 'layout', allow_duplicate=True),
-    Output("pos-checklist", "value"),
-    Output('add-vertices-input', 'value'),
-     Output('add-edges-input', 'value'),
-     Output('remove-vertices-input', 'value'),
-     Output('remove-edges-input', 'value'),
-     Output('add-from-dict-input', 'value'),
-     Output('selected-nodes', 'data', allow_duplicate=True),
-     Input('graph', 'tapEdgeData'),
-    Input('add-vertices-btn', 'n_clicks'),
-     Input('add-edges-btn', 'n_clicks'),
-     Input('remove-vertices-btn', 'n_clicks'),
-     Input('remove-edges-btn', 'n_clicks'), 
+    Output("pos-checklist", "value"), #Nuevo valor del checklist con id 'pos-checklist'. Si es ['Fijar nodos'] se marca el checklist, si es [] queda desmarcado.
+    Output('add-vertices-input', 'value'), #Nuevo valor del input asociado al id 'add-vertices-input'. El string que se retorne se verá en la casilla del input. Esto es análogo para los demás.
+    Output('add-edges-input', 'value'),
+    Output('remove-vertices-input', 'value'),
+    Output('remove-edges-input', 'value'),
+    Output('add-from-dict-input', 'value'),
+    Output('selected-nodes', 'data', allow_duplicate=True),
+    Input('graph', 'tapEdgeData'), #Esto hace que se active el callback a clickear una arista
+    Input('add-vertices-btn', 'n_clicks'), #Esto hace que se active el callback a clickear el botón con id 'add-vertices-btn'. Esto es análogo para los demás.
+    Input('add-edges-btn', 'n_clicks'),
+    Input('remove-vertices-btn', 'n_clicks'),
+    Input('remove-edges-btn', 'n_clicks'), 
     Input('clear-graph-btn', 'n_clicks'), 
     Input('add-from-dict-btn', 'n_clicks'),
-    Input('add-vertices-input', 'n_submit'),
-     Input('add-edges-input', 'n_submit'),
-     Input('remove-vertices-input', 'n_submit'),
-     Input('remove-edges-input', 'n_submit'),
-     Input('add-from-dict-input', 'n_submit'),
-    State('add-vertices-input', 'value'),
-     State('add-edges-input', 'value'),
-     State('remove-vertices-input', 'value'),
-     State('remove-edges-input', 'value'),
-     State('add-from-dict-input', 'value'),
-    State("weight-checklist", "value"),
-    State("pos-checklist", "value"),
-    State('lines-state', 'data'),
+    Input('add-vertices-input', 'n_submit'), #Esto hace que se active el callback a apretar 'enter' en el input con id 'add-vertices-input'. Esto es análogo para los demás.
+    Input('add-edges-input', 'n_submit'),
+    Input('remove-vertices-input', 'n_submit'),
+    Input('remove-edges-input', 'n_submit'),
+    Input('add-from-dict-input', 'n_submit'),
+    State('add-vertices-input', 'value'), #La variable asociada en el argumento de la función será el string (valor) actual correspondiente a lo que está escrito en el input con id 'add-vertices-input'. Esto es análogo para los demás.
+    State('add-edges-input', 'value'),
+    State('remove-vertices-input', 'value'),
+    State('remove-edges-input', 'value'),
+    State('add-from-dict-input', 'value'),
+    State("weight-checklist", "value"), #La variable asociada en el argumento de la función será una la lista ['Pesos'] si el checklist está seleccionado o será la lista [] si no. Esto es análogo para los demás.
+    State("pos-checklist", "value"), 
+    State('lines-state', 'data'), #La variable asociada en el argumento de la función será el valor de 'data' correspondiente al id 'lines-state'. Esto es análogo para los demás.
     State('graph-dict', 'data'),
     State('graph-dict-counter', 'data'),
     State('undo-state', 'data'),
     State("mod-checklist", "value"),
-
-    prevent_initial_call=True
+    prevent_initial_call=True #Esto hace que no se ejecute el callback al iniciar la aplicación. Esto es necesario pues el callback tiene allow_duplicate=True. De otra forma habría un error.
 )
 def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, remove_e_clicks, clear_g_clicks, add_from_dict_clicks,
                  add_v_submit, add_e_submit, remove_v_submit, remove_e_submit, add_from_dict_submit,
                  add_vertices_input, add_edges_input, remove_vertices_input, remove_edges_input, add_from_dict_input, weights, position, lines_state, graph_dict, graph_dict_counter, undo_state, modify):
 
-    i = graph_dict_counter[0]
-    g_dict = graph_dict[i]
-    G = g_dict_to_nx(g_dict)
+    i = graph_dict_counter[0] #i es la posición de graph_dict en la que se encuentra el grafo que se está visualizando.
+    g_dict = graph_dict[i] #g_dict es el diccionario asociado al grafo que se está visualizando.
+    G = g_dict_to_nx(g_dict) #G es grafo que se está visualizando (en netwrokx).
+
+
+    #Por defecto se mantienen las siguientes variables, lo cual sirve por ejemplo si se ejecuta el callback de forma inútil (como un input vacío).
 
     new_undo_state = undo_state
     new_i = i
@@ -154,7 +156,7 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
     new_remove_edges_input = remove_edges_input
     new_add_from_dict_input = add_from_dict_input
 
-    new_selected_nodes = []
+    new_selected_nodes = [] #Se desseleccionan los nodos
     
 
     if weights: #Si está seleccionado Pesos en el checklist
@@ -163,18 +165,19 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
                         'text-background-opacity': 0.8}}]
 
     else:
+
         edge_style = []
 
 
-    layout={'name': 'preset', 'fit': False}
+    layout={'name': 'preset', 'fit': False} #Con este layout se mantiene todo fijo, y está por defecto por si se ejecuta el callback de forma inútil.
         
 
-    triggered_id = ctx.triggered_id
+    triggered_id = ctx.triggered_id #Corresponde al id del input que disparó el callback
     
     message1 = ''
     message2 = ''
 
-    new_lines_state = lines_state
+    new_lines_state = lines_state #Por defecto se mantiene el lines_state
     
     stylesheet = [
             {'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center',
@@ -182,31 +185,32 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
         ] + edge_style # Para que al modificar al grafo se deje de ver una línea si es que está destacada
     
     
-    if (triggered_id == 'add-vertices-btn' or triggered_id == 'add-vertices-input') and add_vertices_input:
+    if (triggered_id == 'add-vertices-btn' or triggered_id == 'add-vertices-input') and add_vertices_input: #Esta cláusula es falsa si add_vertices_input es vacío. Esto es análogo para los demás.
         
+        #Los comentarios de esta parte son análogos en todas, por lo que solo se comentará este.
         try:
             vertices = int(add_vertices_input)
 
             assert (vertices > 0) 
 
             n = len(G.nodes())
-            G.add_nodes_from(range(n, n + vertices))
+            G.add_nodes_from(range(n, n + vertices)) #Se agregan 'vertices' nodos en orden partiendo desde n
             
             message1 = 'Líneas no actualizadas.'
 
             new_lines_state = False
 
-            new_add_vertices_input = ''
+            new_add_vertices_input = '' #Si funciona, el input se borra.
 
-            if not position:
+            if not position: #Si no está marcada la checklist de fijar grafo.
                 
                 layout={'name': 'cose'}
 
-            new_undo_state = True  
-            new_i = (i+1)%2   
+            new_undo_state = True  #Se puede deshcaer
+            new_i = (i+1)%2   #new_i será la posición en el en la lista graph_dict donde será guardado el diccionario del grafo modificado. La otra posición (i) mantendrá el diccionario del grafo anterior, lo que permitirá volver al grafo anterior con el botón de 'deshacer'.
 
 
-        except:
+        except: #Hubo un error
             
             
             message2 = 'Error en el input. Intente de nuevo.'
@@ -311,7 +315,7 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
         try:
 
             G2 = g_dict_to_nx(ast.literal_eval(add_from_dict_input))
-            G=nx.Graph(G2)
+            G = nx.Graph(G2)
 
             message1 = 'Líneas no actualizadas.'
 
@@ -354,7 +358,7 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
 
     elif triggered_id == 'graph':
 
-        if modify:
+        if modify: #Está marcado el checklist de modificar grafo
 
             u = int(tapped_edge_data['source'])   
             v = int(tapped_edge_data['target'])   
@@ -371,14 +375,14 @@ def update_graph(tapped_edge_data, add_v_clicks, add_e_clicks, remove_v_clicks, 
     
     
 
-    elements = nx_to_cytoscape_elements(G)
+    elements = nx_to_cytoscape_elements(G) #Esto es lo que se visualizará
 
     new_graph_dict_counter = graph_dict_counter
-    new_graph_dict_counter[0] = new_i
+    new_graph_dict_counter[0] = new_i #La nueva posición del grafo en la lista
 
     new_g_dict = nx_to_dict(G)
     new_graph_dict = graph_dict
-    new_graph_dict[new_i] = new_g_dict
+    new_graph_dict[new_i] = new_g_dict #Se guarda el diccionario en la nueva posición
 
 
     return new_undo_state, new_graph_dict, new_graph_dict_counter, elements, message1, new_lines_state,  message2, stylesheet, layout, new_pos, new_add_vertices_input, new_add_edges_input, new_remove_vertices_input, new_remove_edges_input, new_add_from_dict_input, new_selected_nodes
