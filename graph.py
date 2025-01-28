@@ -8,18 +8,18 @@ from line_functions import FW, Betweenness, lines, matrixtolinesdict
 from process_functions import nx_to_dict, g_dict_to_nx, weighted_edges_input, remove_edges_process, remove_vertices_process, nx_to_cytoscape_elements
 
 
-app = Dash(__name__)
+app = Dash(__name__) #Se crea la aplicación
 
 stylesheet = [{'selector': 'node', 'style': {'label': 'data(label)', 'text-valign': 'center','text-halign': 'center'}}] #Hace que se vea el 'label' de cada nodo en su centro.
 
 app.layout = html.Div([
-    html.Div(dcc.Store(id='graph-dict', data=[{'nodes': 0, 'edges': []}, {'nodes': 0, 'edges': []}])), #Para guardar el grafo.
-    html.Div(dcc.Store(id='graph-dict-counter', data=[0])),#Guarda en que posición del graph-dict data esta el grafo que se está visualizando
-    html.Div(dcc.Store(id='undo-state', data=False)),#Si data=True, se puede deshacer, sino, no.
-    html.Div(dcc.Store(id='selected-nodes', data=[])), #Lista para guardar los nodos seleccionados de forma interactiva
+    html.Div(dcc.Store(id='graph-dict', data=[{'nodes': 0, 'edges': []}, {'nodes': 0, 'edges': []}])), #Lista de tamaño 2 donde cada elemento es un diccionario correspondiente a un grafo. El tamaño 2 es para la funcionalidad 'deshacer'. Ambas entradas inician con el diccionario del grafo vacío.
+    html.Div(dcc.Store(id='graph-dict-counter', data=[0])), #Guarda la posición de graph-dict data en la que está el grafo que se está visualizando.
+    html.Div(dcc.Store(id='undo-state', data=False)), #Si data=True, se puede deshacer, sino, no.
+    html.Div(dcc.Store(id='selected-nodes', data=[])), #Lista para guardar los nodos seleccionados de forma interactiva para la visualización de las líneas o agregar aristas clickeando nodos.
     html.Div(dcc.Store(id='lines', data=[])), #Para guardar y actualizar las líneas.
     html.Div(dcc.Store(id='lines-state', data=False)), #Si data=True, las líneas están actualizadas, si data=False, no.
-    html.Div(id='lines-info',children='', #Texto con información de las líneas.
+    html.Div(id='lines-info', children='', #Texto con información de las líneas.
                  style={
     'textAlign': 'left',
     'color': 'blue',
@@ -40,18 +40,18 @@ app.layout = html.Div([
     }),  
 
     html.Div(dcc.Checklist(["Pesos"], [], id="weight-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '6px', 'marginLeft': '8px'}), #Checklist; si está seleccionada (['Pesos']), se muestran los pesos de las aristas, si no, no.
-     html.Div(dcc.Checklist(["Fijar nodos"], [], id="pos-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '8px'}),
-     html.Div(dcc.Checklist(["Modificar grafo"], ["Modificar grafo"], id="mod-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '1px'}),
+    html.Div(dcc.Checklist(["Fijar nodos"], [], id="pos-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '8px'}), #Checklist; Si está seleccionada, la posición de los nodos queda fijada.
+    html.Div(dcc.Checklist(["Modificar grafo"], ["Modificar grafo"], id="mod-checklist", inline=True), style={'display': 'inline-block', 'marginRight': '1px'}), #Checklist; Si está seleccionada, se pueden agregar aristas clickeando nodos, y se puede borrar aristas clickeándolas.
     html.Div(
-        dcc.Input(id='clicked-edge-weight', type='text', placeholder="Ej: 3", style={'width': '80px'}, autoComplete='off'), #Input para agregar vértices.
+        dcc.Input(id='clicked-edge-weight', type='text', placeholder="Ej: 3", style={'width': '80px'}, autoComplete='off'), #Input para agregar peso a una arista que se agrega al clickear nodos.
         style={'display': 'inline-block', 'marginRight': '4px','padding': '2px' }),  
     html.Div([
-        dcc.Input(id='add-from-dict-input', type='text', placeholder="Formato de diccionario dado por descargar.", style={'width': '387px'}, autoComplete='off'), #Input para agregar vértices.
-        html.Button("Cargar desde diccionario", id="add-from-dict-btn", n_clicks=0), #Botón para agregar vértices.
+        dcc.Input(id='add-from-dict-input', type='text', placeholder="Formato de diccionario dado por descargar.", style={'width': '387px'}, autoComplete='off'), #Input para cargar un grafo desde un diccionario en el formato que usa la aplicación (y que está en descargar).
+        html.Button("Cargar desde diccionario", id="add-from-dict-btn", n_clicks=0), #Botón para cargar desde diccionario.
     ], style={'display': 'inline-block', 'marginRight': '2px', 'marginLeft': '135px'}), 
     html.Div([
     html.Button("Deshacer", id="undo-btn",  n_clicks=0), #Botón para deshacer.
-], style={'display': 'inline-block', 'marginLeft': '4px'}),
+    ], style={'display': 'inline-block', 'marginLeft': '4px'}),
     html.Br(),    
     html.Div([
         dcc.Input(id='add-vertices-input', type='text', placeholder="Ej: 5", style={'width': '60px'}, autoComplete='off'), #Input para agregar vértices.
@@ -71,7 +71,7 @@ app.layout = html.Div([
     ], style={'display': 'inline-block', 'marginRight': '4px'}),
     html.Div([html.Button("Borrar grafo", id="clear-graph-btn", n_clicks=0), #Botón para borrar el grafo.
     ], style={'display': 'inline-block', 'marginRight': '4px'}),                    
-     html.Div([html.Button("Actualizar líneas", id="lines-btn", n_clicks=0), #Botón para actualizar las líneas.
+    html.Div([html.Button("Actualizar líneas", id="lines-btn", n_clicks=0), #Botón para actualizar las líneas.
     ], style={'display': 'inline-block'}),
                         
     html.Div(id='lines-state-info', children='', style={'display': 'inline-block', 'marginLeft': '6px', 'minWidth': '220px'}), #Texto con información sobre el estado de las líneas.
