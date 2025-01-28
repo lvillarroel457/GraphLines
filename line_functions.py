@@ -4,7 +4,7 @@ import networkx as nx
 
 def FW(G):
     '''
-    Floyw Warshall
+    Floyd Warshall
     
     '''
 
@@ -19,6 +19,7 @@ def Betweenness(A):
     '''
 
     Recibe una matriz de distancias (numpy array) de un espacio cuasimétrico y retorna la betweenness en una lista.
+    La entrada A[i,j] corresponde a la distancia desde i a j.
     
     '''
     
@@ -46,11 +47,11 @@ def Betweenness(A):
 def lines(B, n):
 
     '''
-    Implementación del algoritmo anterior (salvo que a la línea L(i,j) no se le agrega {i,j}).
-    
+
     Recibe la betweenness de un espacio cuasimétrico en una lista (B) y la cantidad de puntos del espacio (n).
     Retorna las líneas del espacio en el siguiente formato:
     Un tensor de n x n x n, donde la posición k,i,j vale 1 si k está en la línea generada por (i,j) y vale 0 si no.
+
     '''
 
     LM = np.zeros((n,n,n))
@@ -77,7 +78,7 @@ def matrixtolinesdict(LM, n, metric = False):
             La cantidad de puntos del espacio (n).
             Un valor de verdad (metric).
             
-    Retorna: Dos diccionarios pairdict y linedict y un entero m. pairdict tiene a todos los pares (en formato de lista como string, por ej. '(3,5)') como llaves y cada par tiene una lista con su línea generada como valor.
+    Retorna: Dos diccionarios pairdict y linedict y un entero m. pairdict tiene a todos los pares (en formato de tupla como string, por ej. '(3,5)') como llaves y cada par tiene una lista con su línea generada como valor.
              linedict tiene a todas las líneas (en formato de lista como string, por ej. '[1,3,4]') como llaves y cada línea tiene una lísta con todos sus pares generadores como valor.
              m es el largo de la línea más grande.
              Si metric = True solo se consideran los pares [i,j] con i < j.
@@ -105,12 +106,12 @@ def matrixtolinesdict(LM, n, metric = False):
             
                 for k in range(n):
     
-                    if LM[k,i,j] == 1:
+                    if LM[k,i,j] == 1: #Si k está en la línea (i,j)
     
                         L1.append(k)
 
             
-                L1.sort()
+                L1.sort() #Se ordena para poder verificar si la línea ya está en linedict.
 
                 if len(L1) > m:
                     
@@ -121,7 +122,7 @@ def matrixtolinesdict(LM, n, metric = False):
                 pairdict[pair] = L1
 
 
-                if str(L1) in linedict.keys():
+                if str(L1) in linedict.keys(): #Si la línea ya está en linedict.
                     
                     linedict[str(L1)].append(pair)
                 
