@@ -4,9 +4,9 @@ import networkx as nx
 import numpy as np
 import ast
 
-
 from line_functions import FW, Betweenness, lines, matrixtolinesdict
 from process_functions import nx_to_dict, d_dict_to_nx, weighted_edges_input, remove_edges_process, remove_vertices_process, nx_to_cytoscape_elements
+
 
 app = Dash(__name__)
 
