@@ -5,7 +5,7 @@ def nx_to_dict(G):
     '''
     Recibe un grafo o digrafo de networkx con pesos y retorna un diccionario con 2 llaves; 'nodes' y 'edges'.
     El valor de 'nodes' es la cantidad de nodos del grafo. 
-    El valor de 'edges' es una lista con todas las aristas o arcos en forma de listas de tamaño 3. El tercer elemento de la lista es el peso. Si el grafo es dirigido la dirección es de izuierda a derecha.
+    El valor de 'edges' es una lista con todas las aristas o arcos en forma de listas de tamaño 3. Los primeros 2 elementos de la lista corresponden a los vértices, y el tercero al peso. Si el grafo es dirigido la dirección es de izquierda a derecha.
     
     '''
     
@@ -142,6 +142,6 @@ def nx_to_cytoscape_elements(G):
     elements = [
             {"data": {"id": str(node), "label": str(node)}} for node in G.nodes()
         ] + [
-            {"data": {"source": str(edge[0]), "target": str(edge[1]), "weight": str(G[edge[0]][edge[1]]['weight'])}} for edge in G.edges()
+            {"data": {"source": str(edge[0]), "target": str(edge[1]), "weight": str(edge[2]['weight'])}} for edge in G.edges(data=True)
         ] 
     return elements
