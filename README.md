@@ -1,6 +1,6 @@
 # Cerar entorno virtual
 ```
-py venv myenv
+py -m venv myenv
 
 ```
 # Activar entorno virtual
