@@ -549,9 +549,9 @@ def calculate_lines(lines_click, lines_data, lines_state, graph_dict, graph_dict
     message2= ''
 
     
-    if triggered_id == 'lines-btn':
+    if triggered_id == 'lines-btn': #Es True siempre, se podría quitar este if.
 
-        new_selected_nodes=[]
+        new_selected_nodes=[] #Se desseleccionan los nodos seleccionados.
         
         if len(G.nodes()) == 0:
             
@@ -574,19 +574,19 @@ def calculate_lines(lines_click, lines_data, lines_state, graph_dict, graph_dict
 
             
         
-        elif not lines_state:
+        elif not lines_state: #Si no están calculadas las líneas
 
             
            
-            n = len(G.nodes())
-            D = FW(G)
-            B = Betweenness(D)
-            LM = lines(B, n)
-            pairdict, linedict, l = matrixtolinesdict(LM, n, True)
-            d = nx.diameter(G, weight='weight')
-            strD = np.array2string(D, separator=', ')
-            strB = str(B)
-            new_lines_data = [pairdict, linedict, l, d, n, strD, strB]
+            n = len(G.nodes()) #Cantidad de nodos
+            D = FW(G) #Matriz de distancias
+            B = Betweenness(D) #Se calcula la bewteennness
+            LM = lines(B, n) #Se calculan las líneas
+            pairdict, linedict, l = matrixtolinesdict(LM, n, True) #Se calculan los diccionarios de las líneas para métricos
+            d = nx.diameter(G, weight='weight') #Se calcula el diámetro
+            strD = np.array2string(D, separator=', ') #String de la matriz de distancias
+            strB = str(B) #String con la bewteenness
+            new_lines_data = [pairdict, linedict, l, d, n, strD, strB] #Se actualizan las líneas
 
             
             if l == n:
@@ -603,7 +603,9 @@ def calculate_lines(lines_click, lines_data, lines_state, graph_dict, graph_dict
 
             assert lines_state
             
-            new_lines_data = lines_data
+            new_lines_data = lines_data #Se mantienen las líneas
+
+            #Se accede a la información de las líneas para ponerla en el mensaje2
 
             pairdict =  lines_data[0]
             linedict = lines_data[1]
@@ -636,10 +638,11 @@ def calculate_lines(lines_click, lines_data, lines_state, graph_dict, graph_dict
     Input("mod-checklist", "value"), #Se activa al apretar la checklist (ya sea para marcar o desmarcar)
     prevent_initial_call=True
 )
-def weight_checklists(modify):
+def mod_checklists(modify):
 
 
     if modify:
+        
         message = 'Seleccione 2 nodos para agregar la arista correspondiente.'
 
     else:
