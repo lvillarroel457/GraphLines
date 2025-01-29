@@ -100,7 +100,7 @@ app.layout = html.Div([
     Output('graph-dict', 'data', allow_duplicate=True),
     Output('graph-dict-counter', 'data', allow_duplicate=True),
     Output('graph', 'elements', allow_duplicate=True),
-    Output('lines-state-info', 'children', allow_duplicate=True),
+    Output('lines-state-info', 'children', allow_duplicate=True), #Children es el mensaje que se muestra
     Output('lines-state', 'data', allow_duplicate=True),
     Output('lines-info', 'children', allow_duplicate=True),
     Output('graph', 'stylesheet', allow_duplicate=True),
@@ -417,6 +417,7 @@ def undo_func(undo_clicks, graph_dict, graph_dict_counter, undo_state, lines_sta
         
 
     else:
+
         edge_style = [{'selector': 'edge', 'style': {'curve-style': 'bezier','target-arrow-shape': 'triangle'}}]
 
 
@@ -426,7 +427,7 @@ def undo_func(undo_clicks, graph_dict, graph_dict_counter, undo_state, lines_sta
         ] + edge_style # Para que al modificar al grafo se deje de ver una línea si es que está destacada    
 
 
-    if position:
+    if position: #Si está marcada la checklist de fijar digrafo.
 
         layout={'name': 'preset', 'fit': False}
             
@@ -438,25 +439,26 @@ def undo_func(undo_clicks, graph_dict, graph_dict_counter, undo_state, lines_sta
 
     message2 = ''
 
-    new_undo_state = False
+    new_undo_state = False #Si se podía deshacer, ahora ya no se puede. Como la lista de los diccionarios es de tamaño 2, solo se puede deshacer una vez.
 
-    if undo_state:
-        i = graph_dict_counter[0]
-        new_i = (i-1)%2 
+    if undo_state: #Si se puede deshacer
+
+        i = graph_dict_counter[0] #i es la posición de la lista de graph_dict en la que está el grafo que se está visualizando
+        new_i = (i-1)%2  #new_i es será la posición del otro grafo en la lista de graph_dict, es decir el anterior al que se está accediendo ahora con la funcionalidad de deshacer.
         g_dict = graph_dict[new_i]
-        G = d_dict_to_nx(g_dict)
+        G = d_dict_to_nx(g_dict) #G es el grafo anterior al que se está accediendo
 
         
 
         elements = nx_to_cytoscape_elements(G)
 
         new_graph_dict_counter = graph_dict_counter
-        new_graph_dict_counter[0] = new_i
+        new_graph_dict_counter[0] = new_i #Se actualiza el contador
 
         message1 = 'Líneas no actualizadas.'
         new_lines_state = False
 
-    else:
+    else: #No se puede deshacer, en este caso, se mantiene todo igual.
 
         i = graph_dict_counter[0]
         g_dict = graph_dict[i]
