@@ -665,7 +665,7 @@ def mod_checklists(modify):
     Output('selected-nodes', 'data', allow_duplicate=True),
     Output('lines-state', 'data', allow_duplicate=True),
     Output('clicked-edge-weight', 'value'),
-    Input('graph', 'tapNodeData'),
+    Input('graph', 'tapNodeData'), #Esto hace que se active el callback a clickear un nodo.
     State("weight-checklist", "value"),
     State('lines', 'data'),
     State('lines-state', 'data'),
@@ -679,6 +679,8 @@ def mod_checklists(modify):
 )
 def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected_nodes, modify, graph_dict, graph_dict_counter, undo_state, clicked_edge_weight):
 
+
+    #Por defecto se mantienen las siguientes variables
 
     new_lines_state = lines_state
 
@@ -716,10 +718,10 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
     
 
 
-    if modify:
+    if modify: #Si está marcada la checklist de modificar grafo
 
         if tapped_node_data:
-            node_id = tapped_node_data['id']
+            node_id = tapped_node_data['id'] #id del nodo que se clickeó
             if node_id not in selected_nodes:
                 new_selected_nodes.append(node_id)
             
@@ -743,7 +745,7 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
 
                 u = int(new_selected_nodes[0]) 
                 v = int(new_selected_nodes[1])  
-                G.add_weighted_edges_from([(u,v,w)])    
+                G.add_weighted_edges_from([(u,v,w)]) #Se agrega la arista (u,v) con peso w    
                 new_undo_state = True
                 new_i = (i+1)%2
 
@@ -773,7 +775,7 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
             message = "Para la visualización debe actualizar las líneas."
 
 
-        else:                       
+        else: #lines_state=True                        
             pairdict =  lines_data[0]
             linedict = lines_data[1]
             l = lines_data[2]
@@ -786,7 +788,7 @@ def highlight_nodes(tapped_node_data, weights, lines_data, lines_state, selected
                 
             else:
 
-                    lstr = 'No' #No hay línea universal
+                lstr = 'No' #No hay línea universal
                 
                 
             
@@ -857,8 +859,8 @@ def donwnload(n_clicks, lines_data, lines_state, graph_dict, graph_dict_counter)
     nodes = str(G.nodes())
     edges = str(G.edges(data=True))
 
-    A = nx.to_numpy_array(G, dtype=int)
-    strA = np.array2string(A, separator=', ')
+    A = nx.to_numpy_array(G, dtype=int) #matriz de adyacencia
+    strA = np.array2string(A, separator=', ') #String de la matriz de adyacencia
 
 
     if lines_state:
