@@ -26,3 +26,6 @@ py -m graph
 py -m digraph
 
 ```
+
+## Financiado por Basal CMM FB210005
+![](horiz.png)
