@@ -1,3 +1,11 @@
+# Descripción
+
+Este repositorio contiene 2 aplicaciones; digraph.py y graph.py.  La primera tiene como objetivo poder visualizar las líneas de un espacio
+cuasimétrico, el cual está representado por un digrafo con pesos. La segunda tiene como
+objetivo poder visualizar las líneas de un espacio métrico, el cual está representado por
+un grafo con pesos. 
+
+
 # Ejecutar la Aplicación localmente (Windows):
 
 ## Crear entorno virtual
